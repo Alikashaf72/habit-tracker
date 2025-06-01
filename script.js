@@ -15,7 +15,7 @@ function loadTasksFromLocalStorage() {
   if (storedTasks) {
     taskData = JSON.parse(storedTasks);
     taskData.forEach((task) => {
-      createTaskElement(task.id, task.name, task.streak);
+      createTaskElement(task.id, task.name, task.streak, task.createat);
       taskCount = Math.max(taskCount, task.id);
     });
   } else {
@@ -33,30 +33,40 @@ addNewTasks.addEventListener("click", function (e) {
 // Add a new task based on user input
 function addNewTask() {
   const taskInput = document.getElementById('task-input');
+  // Get the task name from the input field
+  // trim() removes whitespace from both ends of a string
   const taskNameValue = taskInput.value.trim();
+
 
   // Validate task name
   if (taskNameValue === '') {
     alert('Please enter a task name');
     return;
   }
-
+  
   taskCount++; // Increment task counter for unique ID
   const taskId = taskCount;
   const initialStreak = 0;
+  
+  const createat = getTimeDate();
 
   // Store the task in local storage
-  saveTaskToLocalStorage(taskId, taskNameValue, initialStreak);
+  saveTaskToLocalStorage(taskId, taskNameValue, initialStreak, createat);
 
  // Create task element in the DOM
-  createTaskElement(taskId, taskNameValue, initialStreak);
+  createTaskElement(taskId, taskNameValue, initialStreak, createat);
 
   // Clear the input field
   taskInput.value = '';
 }
 
+// Function to get the current date and time
+function getTimeDate() {
+  return new Date().toLocaleString();
+}
+
 // Function to create a task element
-function createTaskElement(taskId, taskName, streak) {
+function createTaskElement(taskId, taskName, streak, createat) {
   const task = document.createElement('div');
   task.classList.add('task');
   task.id = `tasks-${taskId}`; // Unique ID for the task element
@@ -68,7 +78,13 @@ function createTaskElement(taskId, taskName, streak) {
   const streakElement = document.createElement('span');
   streakElement.classList.add('streak');
   streakElement.id = `streak-${taskId}`;
-  streakElement.innerText = `${streak}🔥`;
+  streakElement.innerText = `🔥 ${streak} days`; 
+  
+  const timeDate = document.createElement('span');
+  timeDate.classList.add('time-date');
+  timeDate.id = `time-date-${taskId}`;
+  timeDate.innerText = `Created at: ${createat}`;
+
 
   const buttonGroup = document.createElement('div');
   buttonGroup.classList.add('button-group');
@@ -88,6 +104,7 @@ function createTaskElement(taskId, taskName, streak) {
   // Append buttons to the button group
   task.appendChild(taskNameElement);
   task.appendChild(streakElement);
+  task.appendChild(timeDate);
   task.appendChild(buttonGroup);
   
   // Append task to the task list in the DOM
@@ -95,11 +112,12 @@ function createTaskElement(taskId, taskName, streak) {
 }
 
 // Function to save a task to local storage
-function saveTaskToLocalStorage(taskId, taskName, streak) {
+function saveTaskToLocalStorage(taskId, taskName, streak, createat) {
   let taskInfo = {
     id: taskId,
     name: taskName,
     streak: streak,
+    createat: createat
   };
   // let taskData
   taskData.push(taskInfo);
@@ -107,10 +125,11 @@ function saveTaskToLocalStorage(taskId, taskName, streak) {
 }
 
 // Function to update a task's streak in local storage
-function updateStreakInLocalStorage(taskId, streak) {
+function updateStreakInLocalStorage(taskId, streak, upDateAt) {
   const task = taskData.find((task) => task.id === taskId);
   if (task) {
     task.streak = streak;
+    task.createat = upDateAt || getTimeDate(); // Update the time if provided, else use current time
     localStorage.setItem("tasks-all", JSON.stringify(taskData));
   }
 }
@@ -119,15 +138,17 @@ function updateStreakInLocalStorage(taskId, streak) {
 // Increment streak for a specific task
 function incrementStreak(taskId) {
   let streak = getStreak(taskId) + 1;
-  updateStreakDisplay(taskId, streak);
-  updateStreakInLocalStorage(taskId, streak);
+  const upDateAt = getTimeDate();
+  updateStreakDisplay(taskId, streak, upDateAt);
+  updateStreakInLocalStorage(taskId, streak, upDateAt);
 }
 
 // Decrement streak for a specific task
 function decrementStreak(taskId) {
   let streak = Math.max(0, getStreak(taskId) - 1);
-  updateStreakDisplay(taskId, streak);
-  updateStreakInLocalStorage(taskId, streak);
+  const upDateAt = getTimeDate();
+  updateStreakDisplay(taskId, streak, upDateAt);
+  updateStreakInLocalStorage(taskId, streak, upDateAt);
 }
 
 // Reset streak for a specific task
@@ -155,10 +176,14 @@ function getStreak(taskId) {
 }
 
 // Helper function to update the streak display for a specific task
-function updateStreakDisplay(taskId, streak) {
+function updateStreakDisplay(taskId, streak, upDateAt) {
+  const timeDateElement = document.getElementById(`time-date-${taskId}`);
+  if (timeDateElement) {
+    timeDateElement.innerText = `Updated at: ${upDateAt}`;
+  }
   const streakElement = document.getElementById(`streak-${taskId}`);
   if (streakElement) {
-    streakElement.innerText = `${streak}🔥`;
+    streakElement.innerText = `🔥 ${streak} days`;
   }
 }
 

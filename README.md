@@ -2,7 +2,7 @@
 
 A simple, responsive web app to help you build and maintain good habits by tracking your daily streaks.
 
-### :point_right: [**Live Preview**](https://alikashaf72.github.io/habit-tracker/) 
+###  [**Live Preview**](https://alikashaf72.github.io/habit-tracker/) 
 
 ## Features
 
